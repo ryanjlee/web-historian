@@ -14,7 +14,7 @@ var sendResponse = function(response, statusCode, data) {
 var sendDefault = function(request, response, path) {
   fs.readFile(path, function(err, data) {
     if (err) {
-      console.log('error');
+      // console.log(path);
       throw err;
     } else {
       return sendResponse(response, 200, data);
@@ -42,15 +42,17 @@ var actions = {
 
   POST: function(request, response) {
     var urlData = '';
-    console.log('inpost');
     request.on('data', function(chunk){
       urlData += chunk;
     });
     request.on('end', function(){
       var url = urlData.split('=').pop();
       archive.isURLArchived(url, function(exists){
-        if(exists) {
-          return; //do stuff
+        console.log(exists);
+        if(!exists) {
+          archive.addUrlToList(url, function() {
+            sendResponse(response, 302)
+          });
         }
       });
       // var url = JSON.parse(urlData);

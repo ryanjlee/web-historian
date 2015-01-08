@@ -31,7 +31,16 @@ exports.readListOfUrls = function(){
 exports.isUrlInList = function(){
 };
 
-exports.addUrlToList = function(){
+exports.addUrlToList = function(url, callback){
+  var listPath = exports.paths.list;
+  // fs.readFileSync(listPath, 'utf8', function(err, data) {
+  //   // console.log(err);
+  //   console.log(typeof data);
+  // });
+  // console.log(listPath)
+  fs.appendFile(listPath, url + '\n', function(err) {
+    callback();
+  });
 };
 
 exports.isURLArchived = function(pathName, callback){
