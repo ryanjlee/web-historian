@@ -11,24 +11,55 @@ var sendResponse = function(response, statusCode, data) {
   response.end(data);
 };
 
-var actions = {
-  GET: function(request, response, fixturePath) {
-    fixturePath = fixturePath || '/index.html';
-    fs.readFile(archive.paths.siteAssets + fixturePath,  function(err, data) {
-      if (err) {
-        console.log('error')
-        throw err;
-      }
+var sendDefault = function(request, response, path) {
+  fs.readFile(path, function(err, data) {
+    if (err) {
+      console.log('error');
+      throw err;
+    } else {
       return sendResponse(response, 200, data);
+    }
+  });
+};
+
+var actions = {
+  GET: function(request, response) {
+    var pathName = url.parse(request.url).pathname;
+    var newPath;
+
+    if (pathName === '/') {
+      newPath = path.join(archive.paths.siteAssets, '/index.html');
+      sendDefault(request, response, newPath);
+    } else {
+      newPath = path.join(archive.paths.archivedSites, pathName);
+      sendDefault(request, response, newPath);
+    }
+  },
+
+  OPTION: function(request, response) {
+    sendResponse(response);
+  },
+
+  POST: function(request, response) {
+    var urlData = '';
+    console.log('inpost');
+    request.on('data', function(chunk){
+      urlData += chunk;
+    });
+    request.on('end', function(){
+      var url = urlData.split('=').pop();
+      archive.isURLArchived(url, function(exists){
+        if(exists) {
+          return; //do stuff
+        }
+      });
+      // var url = JSON.parse(urlData);
+      // sendResponse(response, 304);
     });
   }
 };
 
 exports.handleRequest = function (request, response) {
-  // var parts = url.parse(request.url);
-  // console.log(parts);
-  // parts.pathname;
-  // response.write(200, httpHelper.headers);
   if (actions[request.method]) {
     actions[request.method](request, response);
   }
