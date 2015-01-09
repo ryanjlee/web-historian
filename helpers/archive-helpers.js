@@ -44,6 +44,7 @@ exports.addUrlToList = function(url, callback){
   //   console.log(typeof data);
   // });
   // console.log(listPath)
+
   fs.appendFile(listPath, url + '\n', function(err) {
     callback();
   });
@@ -55,16 +56,27 @@ exports.isURLArchived = function(pathName, callback){
   });
 };
 
+exports.httpify = function(link) {
+  if (link.search(/^http[s]?\:\/\//) === -1) {
+    link = 'http://' + link;
+  }
+  return link;
+};
+
 exports.downloadUrl = function(url) {
-  http.get(url, function(res) {
+  var httpUrl = exports.httpify(url);
+  http.get(httpUrl, function(res) {
     var data = '';
     res.on('data', function(chunk) {
       data += chunk;
     });
     res.on('end', function() {
+      fs.open(exports.paths.archivedSites + '/' + url, 'w', function(err, fd) {
+      fs.writeFileSync(exports.paths.archivedSites + '/' + url, data);
+      });
     });
   });
-}
+};
 
 
 
@@ -73,7 +85,7 @@ exports.downloadUrls = function(){
     _.each(urls, function(url) {
       exports.isURLArchived(url, function(exists) {
         if (!exists) {
-          exports.downloadUrl
+          exports.downloadUrl(url);
         }
       })
     })

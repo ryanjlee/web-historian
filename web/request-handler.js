@@ -72,8 +72,6 @@ var actions = {
           sendFile(request, response, url);
         }
       });
-      // var url = JSON.parse(urlData);
-      // sendResponse(response, 304);
     });
   }
 };
